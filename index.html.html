@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ПрофКомпас — расширенный профориентационный тест</title>
+<style>
+:root{--ink:#20243a;--muted:#687087;--purple:#6657d9;--line:#e5e7f0;--bg:#f5f6fc}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(135deg,#f0efff,#f8faff 55%,#eef8f7);font:16px/1.55 Arial,sans-serif;color:var(--ink)}
+main{max-width:900px;margin:auto;padding:25px 16px 55px}.hero,.panel{background:#fff;border:1px solid var(--line);border-radius:22px;padding:26px;box-shadow:0 10px 35px #30365b0c;margin-bottom:17px}
+.tag{display:inline-block;background:#efedff;color:#5144c4;padding:6px 11px;border-radius:20px;font-size:12px;font-weight:bold;letter-spacing:.3px}
+h1{font-size:clamp(29px,5vw,43px);line-height:1.12;margin:14px 0 10px}h2{font-size:25px;margin:0 0 10px}h3{margin:0 0 5px}p{color:var(--muted);margin:8px 0}
+.stats{display:flex;gap:8px;flex-wrap:wrap;margin-top:17px}.stats span{background:#f5f6fb;padding:8px 11px;border-radius:10px;font-size:13px;color:#626a80}
+.progress{margin:4px 0 22px}.progressline{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:7px}.bar{height:9px;background:#ececf5;border-radius:10px;overflow:hidden}.bar div{height:100%;width:0;background:var(--purple);transition:width .2s}
+.section-title{margin:25px 0 7px;padding-bottom:9px;border-bottom:1px solid var(--line)}.section-title small{display:block;color:var(--muted);font-weight:normal}
+.question{padding:17px 0;border-bottom:1px solid var(--line)}.qtitle{font-weight:bold;margin-bottom:10px}.options{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.option{display:block;border:1px solid var(--line);padding:11px 9px;border-radius:11px;text-align:center;cursor:pointer;font-size:14px;color:#4d5268}.option:hover{border-color:#aaa1f4}.option:has(input:checked){background:#f0eeff;border-color:var(--purple);color:#4538b5;font-weight:bold}.option input{position:absolute;opacity:0}
+button{border:0;background:var(--purple);color:white;padding:13px 20px;border-radius:12px;font-weight:bold;font-size:15px;cursor:pointer;margin-top:17px}button.secondary{background:#eeedfa;color:#5144c4;margin-left:7px}
+.notice{font-size:13px;margin-top:10px}.hidden{display:none}.introresult{background:#f2f0ff;border-radius:14px;padding:16px;margin:14px 0}.career{border:1px solid var(--line);border-radius:14px;padding:15px;margin:10px 0}.career p{font-size:14px;margin:4px 0}.meta{font-size:12px;color:#6558ca;font-weight:bold;margin-top:7px}.pill{display:inline-block;background:#f4f4fa;border-radius:20px;padding:4px 8px;margin:3px 3px 0 0;font-size:11px;color:#626a80}
+.resulthead{display:flex;justify-content:space-between;gap:10px;align-items:center}.note{font-size:12px;color:#85899a;text-align:center;margin-top:20px}
+@media(max-width:600px){main{padding:12px 9px 35px}.hero,.panel{padding:19px}.options{grid-template-columns:1fr}.option{text-align:left;padding:12px}.resulthead{display:block}}
+@media print{body{background:white}.hero,#quiz button,.note,#results button{display:none!important}.panel,.hero{box-shadow:none;border:0}.career{break-inside:avoid}}
+</style></head>
+<body><main>
+<section class="hero">
+<span class="tag">РАСШИРЕННЫЙ ТЕСТ ДЛЯ ПОДРОСТКОВ</span>
+<h1>ПрофКомпас:<br>исследуй свои возможности</h1>
+<p>Ответь на вопросы о том, что тебе интересно, как ты предпочитаешь работать и какие задачи тебе нравятся. Тест оценит несколько сторон твоих склонностей и подберёт 10 профессий из большого каталога.</p>
+<div class="stats"><span>45 вопросов</span><span>около 8–12 минут</span><span>40+ профессий в каталоге</span><span>без регистрации</span></div>
+</section>
+<section class="panel" id="quiz">
+<div class="progress"><div class="progressline"><span id="progressText">Отвечено: 0 из 45</span><span id="progressPct">0%</span></div><div class="bar"><div id="progressBar"></div></div></div>
+<div id="questions"></div><button id="finish">Получить мои результаты</button><p class="notice" id="warning">Можно отвечать честно: здесь нет правильных и неправильных вариантов.</p>
+</section>
+<section class="panel hidden" id="results">
+<div class="resulthead"><span class="tag">ТВОЙ ПРОФИЛЬ</span><span id="answered" class="pill"></span></div>
+<h2 style="margin-top:12px">Твои профессиональные направления</h2>
+<div class="introresult"><b>Как читать результат.</b> Проценты показывают, насколько твои ответы совпали с качествами и интересами, которые часто нужны в этой сфере. Это ориентир для размышления, а не научный диагноз, экзамен или гарантия успеха. Профессия может подойти и по причинам, которые тест не измеряет.</div>
+<h3>Твои сильные стороны по ответам</h3><div id="traits"></div>
+<h3 style="margin-top:22px">10 направлений, которые стоит рассмотреть</h3><div id="careerList"></div>
+<p class="notice">Совет: выбери 2–3 профессии из списка, посмотри, чем люди занимаются каждый день, какие предметы им нужны, и попробуй небольшое практическое задание.</p>
+<button onclick="window.print()">Сохранить результат / распечатать</button><button class="secondary" id="restart">Пройти заново</button>
+</section><div class="note">ПрофКомпас · Учебный профориентационный проект · Ответы обрабатываются только в браузере и никуда не отправляются</div>
+</main>
+<script>
+const dimensions={
+ people:"Общение и работа с людьми",empathy:"Эмпатия и помощь",team:"Командная работа",lead:"Лидерство и организация",
+ logic:"Логика и анализ",numbers:"Математика и данные",tech:"Технологии",science:"Наука и исследования",
+ creative:"Творчество и дизайн",words:"Языки и тексты",detail:"Внимательность и точность",focus:"Усидчивость",
+ practical:"Практическая деятельность",nature:"Природа и окружающая среда",adapt:"Гибкость и самостоятельность"
+};
+const sections=[
+["Общение и взаимодействие","Насколько тебе интересна работа с людьми?"],
+["Помощь и забота","Как ты относишься к поддержке других людей?"],
+["Логика и исследование","Нравится ли тебе разбираться в сложных вопросах?"],
+["Технологии и точные задачи","Как тебе работа с техникой, числами и деталями?"],
+["Творчество и информация","Что тебе ближе — создавать, писать, придумывать?"],
+["Организация и самостоятельность","Как ты действуешь, когда нужно довести дело до результата?"],
+["Практика и окружающий мир","Интересна ли тебе работа с реальными объектами и природой?"]
+];
+const questions=[
+["Мне легко начать разговор с новым человеком.","people"],["Мне нравится объяснять свою точку зрения группе людей.","people"],["Я умею внимательно слушать, даже если тема не очень интересна.","people"],["Мне интересно договариваться и искать компромисс в споре.","people"],["Я бы хотел(а) проводить часть рабочего дня на встречах и общении.","people"],["Мне комфортно знакомиться с людьми и задавать им вопросы.","people"],
+["Я замечаю, когда кому-то нужна поддержка, даже если он не просит.","empathy"],["Мне интересно понять, почему люди чувствуют и ведут себя по-разному.","empathy"],["Я готов(а) терпеливо помогать человеку, которому трудно освоить новое.","empathy"],["Мне было бы интересно работать в сфере здоровья, образования или социальной помощи.","empathy"],["Я могу спокойно выслушивать чужие переживания, не пытаясь сразу осуждать.","empathy"],
+["Мне нравится выполнять общую задачу вместе с другими.","team"],["В командном проекте я обычно предлагаю распределить обязанности.","team"],["Я умею учитывать чужие идеи, даже если они отличаются от моих.","team"],
+["Мне нравится брать ответственность за общий результат.","lead"],["Я могу самостоятельно организовать небольшое мероприятие или проект.","lead"],["Мне интересно придумывать идею проекта и планировать, как её реализовать.","lead"],
+["Мне нравится искать причины событий, а не просто запоминать факты.","logic"],["Мне интересно решать головоломки, задачи или логические загадки.","logic"],["Я люблю сравнивать информацию из разных источников и делать выводы.","logic"],["Если что-то не получается, я пробую несколько способов решения.","logic"],
+["Мне нравятся задачи с числами, измерениями или расчётами.","numbers"],["Мне было бы интересно анализировать таблицы, статистику или результаты опросов.","numbers"],["Я получаю удовольствие, когда могу проверить ответ точным расчётом.","numbers"],
+["Мне интересно узнавать, как устроены приложения, сайты и компьютерные программы.","tech"],["Я хотел(а) бы попробовать создать собственный сайт, игру или цифровой проект.","tech"],["Мне нравится разбираться в настройках устройств и искать причину технической проблемы.","tech"],
+["Мне интересно проводить опыты и проверять предположения.","science"],["Я люблю узнавать новые научные факты о мире.","science"],["Мне нравится долго изучать одну тему, чтобы разобраться в ней глубже.","science"],
+["Мне нравится рисовать, фотографировать, монтировать видео или оформлять материалы.","creative"],["Я часто придумываю необычные идеи или альтернативные способы что-то сделать.","creative"],["Мне важно, чтобы результат моей работы был не только полезным, но и красивым.","creative"],
+["Мне нравится писать рассказы, статьи, заметки или сценарии.","words"],["Мне интересно изучать иностранные языки и особенности других культур.","words"],["Я обращаю внимание на то, насколько понятно и грамотно написан текст.","words"],
+["Я замечаю опечатки, неточности и мелкие детали, которые другие могут пропустить.","detail"],["Мне нравится, когда в работе есть понятные правила и порядок.","detail"],["Я предпочитаю перепроверить результат, прежде чем считать задачу законченной.","detail"],
+["Я могу долго заниматься одним делом, если хочу получить хороший результат.","focus"],["Мне удаётся продолжать работу, даже когда задача становится однообразной.","focus"],["Я готов(а) тренироваться и повторять действия, чтобы улучшить навык.","focus"],
+["Мне нравится собирать, чинить, готовить, конструировать или работать руками.","practical"],["Мне интереснее увидеть реальный результат работы, чем только обсуждать идею.","practical"],
+["Мне интересно изучать животных, растения и природные процессы.","nature"],["Я хотел(а) бы участвовать в проектах, связанных с экологией или защитой природы.","nature"],
+["Я могу быстро перестроить план, если обстоятельства изменились.","adapt"],["Мне нравится самостоятельно выбирать способ выполнения задачи.","adapt"]
+];
+const careers=[
+["Психолог","Помогает людям разбираться в эмоциях, поведении и жизненных трудностях.",["empathy","people","logic"]],
+["Педагог / учитель","Обучает детей и взрослых, объясняет темы и поддерживает развитие учеников.",["people","empathy","words","team"]],
+["Врач","Диагностирует заболевания, принимает решения и помогает сохранять здоровье.",["science","empathy","detail","focus"]],
+["Медицинская сестра / брат","Ухаживает за пациентами, выполняет медицинские процедуры и работает в команде.",["empathy","team","detail","practical"]],
+["Ветеринар","Помогает животным, проводит осмотры и назначает лечение.",["nature","science","empathy","detail"]],
+["Программист","Пишет и проверяет код, создаёт сайты, приложения и программные системы.",["tech","logic","focus","detail"]],
+["Разработчик игр","Создаёт игровые механики, программную логику и интерактивные миры.",["tech","creative","logic","focus"]],
+["Специалист по кибербезопасности","Защищает компьютерные системы и данные от цифровых угроз.",["tech","logic","detail","focus"]],
+["Веб-дизайнер / UX-дизайнер","Продумывает внешний вид и удобство сайтов и приложений.",["creative","tech","people","detail"]],
+["Графический дизайнер","Создаёт визуальные материалы, айдентику, иллюстрации и макеты.",["creative","detail","adapt"]],
+["Архитектор","Проектирует здания и пространства, сочетая эстетику, расчёты и требования людей.",["creative","numbers","detail","logic"]],
+["Инженер-конструктор","Разрабатывает устройства, механизмы и технические решения.",["logic","numbers","practical","detail"]],
+["Робототехник","Создаёт и настраивает роботов, объединяя программирование, электронику и механику.",["tech","logic","practical","numbers"]],
+["Аналитик данных","Изучает данные, ищет закономерности и готовит выводы для решений.",["numbers","logic","tech","detail"]],
+["Экономист","Анализирует ресурсы, рынки, расходы и финансовые процессы.",["numbers","logic","detail"]],
+["Бухгалтер / аудитор","Ведёт финансовый учёт, проверяет документы и точность расчётов.",["numbers","detail","focus"]],
+["Юрист","Работает с законами, документами, аргументами и защитой интересов людей.",["words","logic","detail","people"]],
+["Журналист","Ищет информацию, берёт интервью и готовит материалы для аудитории.",["words","people","logic","adapt"]],
+["Редактор / корректор","Улучшает тексты, проверяет структуру, стиль и точность формулировок.",["words","detail","focus"]],
+["Переводчик","Передаёт смысл устной и письменной речи между языками.",["words","detail","focus","people"]],
+["Маркетолог","Изучает аудиторию, придумывает продвижение продуктов и оценивает результаты.",["creative","logic","people","adapt"]],
+["Рекламный копирайтер","Придумывает идеи и тексты для рекламы, сайтов и брендов.",["words","creative","people"]],
+["Предприниматель","Запускает проекты, ищет возможности, принимает решения и организует работу.",["lead","adapt","creative","people"]],
+["Менеджер проектов","Планирует этапы работы, координирует команду и следит за сроками.",["lead","team","adapt","detail"]],
+["HR-специалист","Помогает компаниям находить сотрудников, адаптировать и развивать команды.",["people","empathy","team","organization"]],
+["Дипломат / специалист по международным отношениям","Взаимодействует с представителями разных стран и анализирует международные процессы.",["people","words","logic","adapt"]],
+["Биолог","Изучает живые организмы, их развитие и взаимодействие с окружающей средой.",["science","nature","focus","detail"]],
+["Эколог","Исследует влияние человека на природу и участвует в природоохранных проектах.",["nature","science","logic","people"]],
+["Химик","Изучает вещества, проводит эксперименты и разрабатывает материалы или технологии.",["science","detail","focus","logic"]],
+["Физик","Исследует законы природы с помощью экспериментов, моделей и математики.",["science","numbers","logic","focus"]],
+["Географ / геолог","Изучает Землю, природные процессы, ресурсы и территории.",["nature","science","practical","logic"]],
+["Фармацевт","Работает с лекарственными препаратами, их составом, хранением и применением.",["science","detail","empathy"]],
+["Физиотерапевт / реабилитолог","Помогает людям восстанавливать движение и физические возможности.",["empathy","practical","science","people"]],
+["Социальный работник","Поддерживает людей в сложных обстоятельствах и помогает получить необходимые услуги.",["empathy","people","team"]],
+["Полицейский / криминалист","Обеспечивает безопасность или исследует улики и обстоятельства происшествий.",["detail","logic","practical","adapt"]],
+["Повар / шеф-повар","Создаёт блюда, организует кухонные процессы и контролирует качество.",["practical","creative","focus","team"]],
+["Шеф-кондитер","Готовит десерты, работает с точными рецептами и оформлением.",["practical","creative","detail","focus"]],
+["Фотограф / видеограф","Создаёт фото- и видеоматериалы, работает с визуальным повествованием.",["creative","practical","adapt","people"]],
+["Актёр / режиссёр","Создаёт сценические и экранные истории, работает с образами и командой.",["creative","people","team","adapt"]],
+["Спортивный тренер","Помогает людям развивать физические навыки, планирует занятия и мотивирует.",["people","empathy","practical","lead"]]
+];
+const qRoot=document.getElementById("questions");
+let currentSection=-1;
+questions.forEach((q,i)=>{
+ const sec=Math.floor(i*sections.length/questions.length);
+ if(sec!==currentSection){currentSection=sec;const heading=document.createElement("div");heading.className="section-title";heading.innerHTML=`<b>${sections[sec][0]}</b><small>${sections[sec][1]}</small>`;qRoot.appendChild(heading);}
+ const el=document.createElement("div");el.className="question";
+ el.innerHTML=`<div class="qtitle">${i+1}. ${q[0]}</div><div class="options">${["Да, это про меня","Иногда / не уверен(а)","Скорее нет"].map((l,j)=>`<label class="option"><input type="radio" name="q${i}" value="${[2,1,0][j]}">${l}</label>`).join("")}</div>`;
+ qRoot.appendChild(el);
+});
+function updateProgress(){const n=questions.filter((_,i)=>document.querySelector(`input[name="q${i}"]:checked`)).length;document.getElementById("progressText").textContent=`Отвечено: ${n} из ${questions.length}`;document.getElementById("progressPct").textContent=Math.round(n/questions.length*100)+"%";document.getElementById("progressBar").style.width=(n/questions.length*100)+"%";}
+document.addEventListener("change",e=>{if(e.target.matches('input[type="radio"]'))updateProgress()});
+document.getElementById("finish").addEventListener("click",()=>{
+ const missing=questions.findIndex((_,i)=>!document.querySelector(`input[name="q${i}"]:checked`));
+ if(missing>=0){document.getElementById("warning").textContent=`Остался вопрос №${missing+1}. Ответь на него, чтобы расчёт учитывал все ответы.`;document.querySelectorAll(".question")[missing].scrollIntoView({behavior:"smooth",block:"center"});return;}
+ const sums={},counts={};questions.forEach((q,i)=>{sums[q[1]]=(sums[q[1]]||0)+Number(document.querySelector(`input[name="q${i}"]:checked`).value);counts[q[1]]=(counts[q[1]]||0)+2;});
+ const pct={};Object.keys(dimensions).forEach(k=>pct[k]=Math.round((sums[k]||0)/(counts[k]||1)*100));
+ document.getElementById("traits").innerHTML=Object.keys(dimensions).map(k=>({k,v:pct[k]})).sort((a,b)=>b.v-a.v).slice(0,6).map(x=>`<div style="margin:10px 0"><div style="display:flex;justify-content:space-between;font-size:13px"><b>${dimensions[x.k]}</b><span>${x.v}%</span></div><div class="bar"><div style="width:${x.v}%"></div></div></div>`).join("");
+ const ranked=careers.map(c=>{const score=c[2].reduce((s,k)=>s+(pct[k]||0),0)/c[2].length;return {name:c[0],desc:c[1],traits:c[2],score};}).sort((a,b)=>b.score-a.score).slice(0,10);
+ document.getElementById("careerList").innerHTML=ranked.map((c,i)=>`<article class="career"><h3>${i+1}. ${c.name}</h3><p>${c.desc}</p><div class="meta">Совпадение по ответам: ${c.score}%</div><div>${c.traits.map(t=>`<span class="pill">${dimensions[t]}</span>`).join("")}</div></article>`).join("");
+ document.getElementById("answered").textContent=`Учтены все ${questions.length} ответов`;document.getElementById("quiz").classList.add("hidden");document.getElementById("results").classList.remove("hidden");window.scrollTo({top:0,behavior:"smooth"});
+});
+document.getElementById("restart").addEventListener("click",()=>{document.querySelectorAll('input[type="radio"]').forEach(x=>x.checked=false);updateProgress();document.getElementById("results").classList.add("hidden");document.getElementById("quiz").classList.remove("hidden");document.getElementById("warning").textContent="Можно отвечать честно: здесь нет правильных и неправильных вариантов.";window.scrollTo({top:0,behavior:"smooth"});});
+</script></body></html>
